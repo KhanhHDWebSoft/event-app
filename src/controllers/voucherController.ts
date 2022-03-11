@@ -15,7 +15,7 @@ const sendMailQueue = new Queue("sendMail", {
 });
 
 const options = {
-  delay: 60000, // 1 min in ms
+  delay: 15000, // 1 min in ms
   attempts: 2,
 };
 

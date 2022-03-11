@@ -1,6 +1,7 @@
 import { Request, ResponseObject, ResponseToolkit } from "@hapi/hapi";
 import Event from "../models/Event";
 import { agenda } from "../agenda";
+import { startSession } from "mongoose";
 
 interface EditTableMeRequest extends Request {
   payload: {
@@ -16,11 +17,13 @@ export const addEvent = async (
 ): Promise<ResponseObject | void> => {
   try {
     const { payload } = request;
+    console.log("payload", payload);
     const event = await Event.create(payload);
 
     return h.response(event);
   } catch (e) {
-    return h.response().code(500);
+    console.log(e, "errror");
+    // return h.response().code(500);
   }
 };
 
@@ -34,9 +37,13 @@ export const editTableMe = async (
   req: EditTableMeRequest,
   h: ResponseToolkit
 ): Promise<ResponseObject | void> => {
+  const session = await startSession();
+
   try {
     const event = await Event.findById(req.params.event_id).exec();
     const { userId, eventName } = req.payload;
+    session.startTransaction();
+
     // make request payload as user id
     if (event) {
       // not user edit yet
@@ -48,6 +55,8 @@ export const editTableMe = async (
         }
 
         await event.save();
+        await session.commitTransaction();
+        await session.endSession();
         return h.response().code(200);
       }
 
@@ -59,18 +68,23 @@ export const editTableMe = async (
         }
 
         await event.save();
+        await session.commitTransaction();
+        await session.endSession();
         return h.response().code(200);
       }
 
       if (event.userEdit !== userId) {
+        await session.abortTransaction();
+        session.endSession();
         return h.response().code(456);
       }
     } else {
-      return h.response().code(456);
+      throw new Error();
     }
   } catch (e) {
-    console.log(e, "error");
-    return h.response().code(500);
+    await session.abortTransaction();
+    session.endSession();
+    return h.response().code(456);
   }
 };
 
@@ -97,14 +111,9 @@ export const eventMaintain = async (
   h: ResponseToolkit
 ): Promise<ResponseObject | void> => {
   try {
-    (async function () {
-      // IIFE to give access to async/await
-      await agenda.start();
-
-      await agenda.every("5 minutes", "watch event editing", {
-        eventId: req.params.event_id,
-      });
-    })();
+    await agenda.every("5 minutes", "watch event editing", {
+      eventId: req.params.event_id,
+    });
 
     return h.response().code(201);
   } catch (e) {

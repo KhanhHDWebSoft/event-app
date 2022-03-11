@@ -15,12 +15,13 @@ export const eventRoutes: Route[] = [
     options: {
       description: "Add event",
       tags: ["api"],
-      validate: {
-        payload: Joi.object({
-          event_name: Joi.string().required(),
-          total_voucher: Joi.number(),
-        }).options({ stripUnknown: true }),
-      },
+      // validate: {
+      //   payload: Joi.object({
+      //     event_name: Joi.string().required(),
+      //     total_voucher: Joi.number(),
+      //     countVoicher: Joi.number().required(),
+      //   }).options({ stripUnknown: true }),
+      // },
     },
     handler: addEvent,
   },
@@ -30,14 +31,14 @@ export const eventRoutes: Route[] = [
     options: {
       description: "Check event ediable",
       tags: ["api"],
-      validate: {
-        payload: Joi.object({
-          userId: Joi.string().required,
-        }),
-        params: Joi.object({
-          event_id: Joi.string().required(),
-        }).options({ stripUnknown: true }),
-      },
+      // validate: {
+      //   payload: Joi.object({
+      //     userId: Joi.string().required,
+      //   }),
+      //   params: Joi.object({
+      //     event_id: Joi.string().required(),
+      //   }).options({ stripUnknown: true }),
+      // },
     },
     handler: editTableMe,
   },
