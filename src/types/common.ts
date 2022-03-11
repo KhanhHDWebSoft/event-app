@@ -1,7 +1,16 @@
-import { Request, ResponseToolkit } from "@hapi/hapi";
+import {
+  Request,
+  ResponseObject,
+  ResponseToolkit,
+  RouteOptions,
+} from "@hapi/hapi";
 
-export interface Route { 
+export interface Route {
   path: string;
   method: string;
-  handler: (req: Request, h: ResponseToolkit) => void | string;
+  options?: RouteOptions;
+  handler: (
+    req: any | Request,
+    h: ResponseToolkit
+  ) => Promise<void | ResponseObject>;
 }
